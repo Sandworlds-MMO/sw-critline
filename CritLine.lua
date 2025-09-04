@@ -492,6 +492,8 @@ function CritLine_Init()
 		CritLineData[CritLineRealm][CritLinePlayer]["Settings"]["LVLADJ"] = "0";
 		CritLineData[CritLineRealm][CritLinePlayer]["Settings"]["CritLineButtonPosition"] = 30;
 		CritLineData[CritLineRealm][CritLinePlayer]["Settings"]["ToolTip"] = "1";
+		CritLineData[CritLineRealm][CritLinePlayer]["Settings"]["SplashPosition"] = -200;
+		CritLineData[CritLineRealm][CritLinePlayer]["Settings"]["FontSize"] = 48;
 		CritLineData[CritLineRealm][CritLinePlayer]["Data"] = {};
 	end
 	
@@ -511,6 +513,20 @@ function CritLine_Init()
 		
 	CritLineButtonPosition = CritLineData[CritLineRealm][CritLinePlayer]["Settings"]["CritLineButtonPosition"];
 	CritLineButton_UpdatePosition();
+	
+	-- Initialize splash settings
+	if (CritLineData[CritLineRealm][CritLinePlayer]["Settings"]["SplashPosition"] == nil) then
+		CritLineData[CritLineRealm][CritLinePlayer]["Settings"]["SplashPosition"] = -200;
+	end
+	if (CritLineData[CritLineRealm][CritLinePlayer]["Settings"]["FontSize"] == nil) then
+		CritLineData[CritLineRealm][CritLinePlayer]["Settings"]["FontSize"] = 48;
+	end
+	
+	-- Apply saved splash settings
+	CritLineSplashPosition = CritLineData[CritLineRealm][CritLinePlayer]["Settings"]["SplashPosition"];
+	CritLineFontSize = CritLineData[CritLineRealm][CritLinePlayer]["Settings"]["FontSize"];
+	CritLine_UpdateSplashPosition();
+	CritLine_UpdateFontSize();
 end
 
 function CritLineCommand(msg)
@@ -637,6 +653,20 @@ function CritLine_DisplaySettings()
 	
 	CritLineSettingsFrame_ResetAll:SetText(COLOR(SUBHEADER_TEXT_COLOR, CRITLINE_OPTION_RESET_TEXTALL));
 	CritLineSettingsFrame_Reset:SetText(COLOR(SUBHEADER_TEXT_COLOR, CRITLINE_OPTION_RESET_TEXT));
+
+	-- Initialize the new sliders with current values
+	if (CritLineData[CritLineRealm][CritLinePlayer]["Settings"]["SplashPosition"] == nil) then
+		CritLineData[CritLineRealm][CritLinePlayer]["Settings"]["SplashPosition"] = -200;
+	end
+	if (CritLineData[CritLineRealm][CritLinePlayer]["Settings"]["FontSize"] == nil) then
+		CritLineData[CritLineRealm][CritLinePlayer]["Settings"]["FontSize"] = 48;
+	end
+	
+	CritLineSliderSplashPos:SetValue(CritLineData[CritLineRealm][CritLinePlayer]["Settings"]["SplashPosition"]);
+	CritLineSliderFontSize:SetValue(CritLineData[CritLineRealm][CritLinePlayer]["Settings"]["FontSize"]);
+	
+	-- Show sticky crit message for testing
+	CritLine_ShowStickyCritMessage();
 
 	CritLineSettingsFrame:Show();
 end
@@ -777,4 +807,61 @@ function CritLineButton_UpdatePosition()
 	);
 	CritLineData[CritLineRealm][CritLinePlayer]["Settings"]["CritLineButtonPosition"] = CritLineButtonPosition;
 end
+
+-- Function to update splash message vertical position
+function CritLine_UpdateSplashPosition()
+	CritLineSplashFrame:ClearAllPoints();
+	CritLineSplashFrame:SetPoint("TOP", "UIParent", "TOP", 0, CritLineSplashPosition);
+	CritLineData[CritLineRealm][CritLinePlayer]["Settings"]["SplashPosition"] = CritLineSplashPosition;
+	
+	-- Also update the sticky frame position
+	CritLineStickyFrame:ClearAllPoints();
+	CritLineStickyFrame:SetPoint("TOP", "UIParent", "TOP", 0, CritLineSplashPosition);
+end
+
+-- Function to update splash message font size
+function CritLine_UpdateFontSize()
+	-- Update both the main splash frame and sticky frame
+	local fontPath = "Fonts\\FRIZQT__.TTF"; -- Default WoW font
+	CritLineSplashFrame:SetFont(fontPath, CritLineFontSize, "THICKOUTLINE");
+	CritLineStickyFrame:SetFont(fontPath, CritLineFontSize, "THICKOUTLINE");
+	CritLineData[CritLineRealm][CritLinePlayer]["Settings"]["FontSize"] = CritLineFontSize;
+end
+
+-- Function to show a sticky crit message for testing settings
+function CritLine_ShowStickyCritMessage()
+	-- Find the highest crit damage for this character
+	local highestCrit = 0;
+	local highestCritType = "";
+	
+	for k,v in pairs (CritLineData[CritLineRealm][CritLinePlayer]["Data"]) do
+		if (k ~= "CRITCount" and k ~= "NORMALCount" and k ~= "CritPercent") then
+			if ( CritLineData[CritLineRealm][CritLinePlayer]["Data"][k]["CRIT"] ~= nil ) then
+				if ( CritLineData[CritLineRealm][CritLinePlayer]["Data"][k]["CRIT"]["Damage"] > highestCrit ) then
+					highestCrit = CritLineData[CritLineRealm][CritLinePlayer]["Data"][k]["CRIT"]["Damage"];
+					highestCritType = k;
+				end
+			end
+		end
+	end
+	
+	-- If no crit data available, use example data
+	if (highestCrit == 0) then
+		highestCrit = 999;
+		highestCritType = "Example";
+	end
+	
+	-- Clear any existing messages and show the sticky crit
+	CritLineStickyFrame:ClearMessages();
+	CritLineStickyFrame:AddMessage("Critical!", 1, 0, 0, 1, 0); -- Red "Critical!" text
+	CritLineStickyFrame:AddMessage(highestCrit, 1, 1, 1, 1, 0); -- White damage number
+	CritLineStickyFrame:AddMessage(format("New %s Record!", highestCritType), 1, 1, 0, 1, 0); -- Gold record text
+	CritLineStickyFrame:Show();
+end
+
+-- Function to hide the sticky crit message when settings are closed
+function CritLine_HideStickyCritMessage()
+	CritLineStickyFrame:Hide();
+end
+
 --Special Thanks to Uggh!! I used some of his code, cause it is really nice and easy written.

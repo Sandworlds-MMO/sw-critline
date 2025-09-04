@@ -319,10 +319,28 @@
     <Anchors>
       <Anchor point="TOP">
         <Offset>
-          <AbsDimension x="0" y="-120"></AbsDimension>
+          <AbsDimension x="0" y="-200"></AbsDimension>
         </Offset>
       </Anchor>
     </Anchors>
+		<FontString inherits="NumberFontNormalHuge" justifyH="CENTER">
+			<FontHeight>
+				<AbsValue val="48"/>
+			</FontHeight>
+		</FontString>
+	</MessageFrame>
+	
+	<MessageFrame frameStrata="HIGH" insertMode="TOP" name="CritLineStickyFrame" parent="UIParent" toplevel="true" hidden="true">
+		<Size>
+			<AbsDimension x="512" y="100"></AbsDimension>
+		</Size>
+		<Anchors>
+			<Anchor point="TOP">
+				<Offset>
+					<AbsDimension x="0" y="-200"></AbsDimension>
+				</Offset>
+			</Anchor>
+		</Anchors>
 		<FontString inherits="NumberFontNormalHuge" justifyH="CENTER"></FontString>
 	</MessageFrame>
 	
@@ -385,7 +403,7 @@
 	  </Button>
 	<Frame name="CritLineSettingsFrame" enableMouse="true" frameStrata="FULLSCREEN" hidden="true" movable="true" parent="UIParent" toplevel="true">
 		<Size>
-			<AbsDimension x="325" y="360"></AbsDimension>
+			<AbsDimension x="325" y="420"></AbsDimension>
 		</Size>
 		<Anchors>
 			<Anchor point="CENTER">
@@ -428,7 +446,10 @@
 					</Anchor>
 				</Anchors>
 				<Scripts>
-					<OnClick>CritLineSettingsFrame:Hide();</OnClick>
+					<OnClick>
+						CritLine_HideStickyCritMessage();
+						CritLineSettingsFrame:Hide();
+					</OnClick>
 				</Scripts>
 			</Button>
 			<CheckButton id="1" inherits="CritLine_SettingsOptionButtonTemplate" name="$parent_Option1">
@@ -543,6 +564,58 @@
 					<OnValueChanged>
 						CritLineButtonPosition = CritLineSliderButtonPos:GetValue();
 						CritLineButton_UpdatePosition();
+					</OnValueChanged>
+				</Scripts>
+			</Slider>
+			
+			<Slider name="CritLineSliderSplashPos" inherits="OptionsSliderTemplate">
+				<Size>
+					<AbsDimension x="220" y="16"/>
+				</Size>
+				<Anchors>
+					<Anchor point="BOTTOM">
+						<Offset>
+							<AbsDimension x="0" y="35" />
+						</Offset>
+					</Anchor>
+				</Anchors>
+				<Scripts>
+					<OnLoad>
+						getglobal(this:GetName().."Text"):SetText("Splash Vertical Position");
+						getglobal(this:GetName().."High"):SetText("High");
+						getglobal(this:GetName().."Low"):SetText("Low");
+						CritLineSliderSplashPos:SetMinMaxValues(-400, 0);
+						CritLineSliderSplashPos:SetValueStep(10);
+					</OnLoad>
+					<OnValueChanged>
+						CritLineSplashPosition = CritLineSliderSplashPos:GetValue();
+						CritLine_UpdateSplashPosition();
+					</OnValueChanged>
+				</Scripts>
+			</Slider>
+			
+			<Slider name="CritLineSliderFontSize" inherits="OptionsSliderTemplate">
+				<Size>
+					<AbsDimension x="220" y="16"/>
+				</Size>
+				<Anchors>
+					<Anchor point="BOTTOM">
+						<Offset>
+							<AbsDimension x="0" y="60" />
+						</Offset>
+					</Anchor>
+				</Anchors>
+				<Scripts>
+					<OnLoad>
+						getglobal(this:GetName().."Text"):SetText("Splash Font Size");
+						getglobal(this:GetName().."High"):SetText("Large");
+						getglobal(this:GetName().."Low"):SetText("Small");
+						CritLineSliderFontSize:SetMinMaxValues(24, 72);
+						CritLineSliderFontSize:SetValueStep(2);
+					</OnLoad>
+					<OnValueChanged>
+						CritLineFontSize = CritLineSliderFontSize:GetValue();
+						CritLine_UpdateFontSize();
 					</OnValueChanged>
 				</Scripts>
 			</Slider>
